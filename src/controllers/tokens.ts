@@ -97,3 +97,19 @@ export const deleteToken = async (
     next(error);
   }
 };
+
+export const verifyToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    res.status(200).json({ status: "success", data: { user } });
+  } catch (error) {
+    next(error);
+  }
+};

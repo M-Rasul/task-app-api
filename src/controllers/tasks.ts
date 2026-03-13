@@ -24,6 +24,15 @@ export const getTasks = async (
   const { page = 1, pageSize = 10, q = "", done } = req.query;
   const skip = (Number(page) - 1) * Number(pageSize);
 
+  const where = {
+    userId,
+    title: {
+      contains: q as string,
+      mode: "insensitive" as const,
+    },
+    done: done ? (done === "true" ? true : false) : undefined,
+  };
+
   try {
     const tasks = await prisma.task.findMany({
       where: {
@@ -41,9 +50,12 @@ export const getTasks = async (
       take: Number(pageSize),
     });
 
+    const totalCount = await prisma.task.count({ where });
+    const totalPages = Math.ceil(totalCount / Number(pageSize));
+
     res.status(200).json({
       status: "success",
-      data: { tasks, count: tasks.length },
+      data: { tasks, count: tasks.length, totalPages },
     });
   } catch (error) {
     next(error);
